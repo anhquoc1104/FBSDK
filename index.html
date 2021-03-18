@@ -1,0 +1,396 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FB JS SDK</title>
+
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <script>
+        window.fbAsyncInit = async function () {
+
+
+            FB.init({
+                appId: config.appId,
+                autoLogAppEvents: true,
+                cookie: true,
+                xfbml: true,
+                version: 'v10.0'
+            });
+
+            //FB.AppEvents.logPageView();
+
+            FB.getLoginStatus(async function (response) {
+                statusChangeCallback(response);
+
+            });
+            // FB.login(async function (response) {
+            //     if (response.authResponse) {
+            //         console.log('Welcome!  Fetching your information.... ');
+            //         FB.api('/me', async function (response) {
+            //             console.log('Good to see you, ' + response.name + '.');
+            //         });
+            //     } else {
+            //         console.log('User cancelled login or did not fully authorize.');
+            //     }
+            // });
+        };
+
+        (async function (d, s, id) {
+            let js, fjs = d.getElementsByTagName(s)[0];
+            if (d.getElementById(id)) { return; }
+            js = d.createElement(s);
+            js.id = id;
+            js.src = "https://connect.facebook.net/en_US/sdk.js";
+            fjs.parentNode.insertBefore(js, fjs);
+        }(document, 'script', 'facebook-jssdk'));
+
+
+        let $ = document.querySelector.bind(document);
+        let config = {
+            appId: "741428319852126",
+            appSecret: '0d23d5f230a41125754b9a56c4ea50b2',
+            pageId: 251661611705721,
+            accessTokenUserShortLive: '',
+            accessTokenUserLongLive: '',
+            accessTokenPageLongLive: '',
+            userID: '',
+            IGUserID: '',
+        };
+
+        let idMediaUploadFB = [];
+        let idMediaUploadIG = [];
+
+        let fakeLinkPhotos = [`https://images.unsplash.com/photo-1548678756-aa5ed92c4796?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=750&q=80`, `https://images.unsplash.com/photo-1487139975590-b4f1dce9b035?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=334&q=80`, `https://images.unsplash.com/photo-1566208541068-ffdb5471e9bf?ixlib=rb-1.2.1&ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&auto=format&fit=crop&w=334&q=80`];
+
+        //https://graph.facebook.com/
+        let getUserTokenLongLive = async function () {
+            FB.api(`/oauth/access_token?grant_type=fb_exchange_token&client_id=${config.appId}&client_secret=${config.appSecret}&fb_exchange_token=${config.accessTokenUserShortLive}`, function (response) {
+                config.accessTokenUserLongLive = response.access_token;
+                //getPageTokenLongLive();
+
+            })
+        };
+
+        let getPageTokenLongLive = async function () {
+            FB.api(`${config.pageId}?fields=access_token&access_token=${config.accessTokenUserLongLive}`, function (response) {
+                config.accessTokenPageLongLive = response.access_token;
+                //checkPermissionApp();
+                //getIGUserID();
+            });
+        };
+
+        let postContentFB = async function (content, idMedia = []) {
+            let objMedia = {};
+            //console.log(idMedia);
+            if (idMedia.length !== 0) {
+                for (let i in idMedia) {
+                    objMedia[`attached_media[${i}]`] = { "media_fbid": `${idMedia[i]}` };
+                }
+            }
+            //console.log(objMedia);
+            FB.api(
+                `/${config.pageId}/feed`,
+                'POST',
+                {
+                    "message": content,
+                    "access_token": config.accessTokenPageLongLive,
+                    ...objMedia,
+                },
+                function (response) {
+                    //console.log(response);
+                }
+            );
+        };
+
+        let uploadPhotoToFB = async function (content = '', path) {
+            FB.api(
+                `/${config.pageId}/photos`,
+                'POST',
+                {
+                    "message": content,
+                    "url": path,
+                    "access_token": config.accessTokenPageLongLive,
+                    "published": false,
+                },
+                function (response) {
+                    console.log(response.id);
+                    idMediaUploadFB.push(response.id);
+
+                }
+            );
+        };
+
+        let uploadVideoToFB = async function (content, path) {
+            FB.api(
+                `/${config.pageId}/videos`,
+                'POST',
+                {
+                    "message": content,
+                    "url": path,
+                    "access_token": config.accessTokenPageLongLive,
+                    "published": false,
+                },
+                function (response) {
+                    console.log(response);
+                }
+            );
+        };
+
+        let postContentWithLinks = async function (content) {
+            FB.api(
+                `/${config.pageId}/feed`,
+                'POST',
+                {
+                    "message": content,
+                    "link": 'link',
+                    "access_token": config.accessTokenPageLongLive,
+
+                },
+                function (response) {
+                    console.log(response);
+                }
+            );
+        };
+
+        //Get Data of pages: idPage, namePage, rolePage...
+        let getPageOfUser = async function () {
+            FB.api(`/me/accounts?access_token=${config.accessTokenUserLongLive}`, function (response) {
+                if (response) {
+                    console.log(response);
+                }
+            })
+        }
+
+        //Get IG userID
+        let getIGUserID = async function () {
+            FB.api(`${config.pageId}?fields=instagram_business_account&access_token=${config.accessTokenUserLongLive}`, function (response) {
+                if (response) {
+                    console.log(response.instagram_business_account.id);
+                    config.IGUserID = response.instagram_business_account.id;
+                    //{
+                    //   "instagram_business_account": {
+                    //     "id": "17841405822304914"  // Connected IG User ID
+                    //   },
+                    //   "id": "134895793791914"  // Facebook Page ID
+                    //}
+                }
+            })
+        }
+
+        //Get IG Media of User
+        let getMediaOfIGUser = async function () {
+            FB.api(`${config.IGUserID}/media?access_token=${config.accessTokenUserLongLive}`, function (response) {
+                if (response) {
+                    console.log(response);
+                }
+            })
+        }
+
+        let postContentIG = function (idMedia) {
+            console.log(idMedia);
+            FB.api(
+                `/${config.IGUserID}/media_publish`,
+                'POST',
+                {
+                    "creation_id": idMedia[0],
+                },
+                function (response) {
+                    console.log(response);
+                }
+            );
+        };
+
+        let uploadPhotoToIG = async function (content = '', path) {
+            FB.api(
+                `/${config.IGUserID}/media`,
+                'POST',
+                {
+                    "caption": content,
+                    "image_url": path, //requied;  //JPEG, max: 8MB;
+                    //"location-id": config.accessTokenPageLongLive,
+                    //"user_tags":  [{username:'kevinhart4real',x: 0.5,y: 0.8}],
+                },
+                function (response) {
+                    console.log(response.id);
+                    idMediaUploadIG.push(response.id);
+                }
+            );
+        };
+
+        let uploadVideoToIG = async function (content = '', path) {
+            FB.api( //MOV or MP4, max: 100MB, 
+                `/${config.IGUserID}/media`,
+                'POST',
+                {
+                    "media_type": "video",
+                    "caption": content,
+                    "video_url": path, //requied
+                    //"location-id": config.accessTokenPageLongLive,
+                    //"user_tags":  [{username:'kevinhart4real',x: 0.5,y: 0.8}],
+                },
+                function (response) {
+                    console.log(response.id);
+                    idMediaUploadIG.push(response.id);
+
+                }
+            );
+        };
+
+        let getProfile = async function () {
+            FB.api('/me?fields=name,email,birthday,location', function (response) {
+                if (response) {
+                    console.log(response);
+                }
+            })
+        }
+
+        let checkPermissionApp = async function () {
+            FB.api(
+                `/${config.appId}/permissions`,
+                function (response) {
+                    if (response) {
+                        console.log(response);
+                    }
+                }
+            );
+        }
+
+        let statusChangeCallback = async function (response) {
+            // response:
+            // {
+            //     status: 'connected', //:login; unknown: logout
+            //     authResponse: {
+            //         accessToken: '{access-token}',
+            //         expiresIn: '{unix-timestamp}',
+            //         reauthorize_required_in: '{seconds-until-token-expires}',
+            //         signedRequest: '{signed-parameter}',
+            //         userID: '{user-id}'
+            //     }
+            // }
+            if (response.status === 'connected') {
+                console.log('Logged in and authentication');
+                config.accessTokenUserShortLive = response.authResponse.accessToken;
+                config.userID = response.authResponse.userID;
+                toggleButton(true);
+                //getUserTokenLongLive();
+                //  uploadPhotoToFB('test');
+
+            } else {
+                console.log('not authentication');
+                toggleButton(false);
+            }
+        };
+
+        let checkLoginState = async function () {
+            FB.getLoginStatus(function (response) {
+                statusChangeCallback(response)
+                    .then(getUserTokenLongLive())
+                    .then(getPageTokenLongLive())
+                    .then(getIGUserID())
+                    .catch(err => console.log(err))
+                //console.log(config);
+            });
+        };
+
+        let logoutFb = async function () {
+            FB.logout(function (response) {
+                console.log("Logout FB");
+                toggleButton(false);
+            })
+        };
+
+        //Fake pregress Upload Data FB
+        let handleUploadFB = async function () {
+            idMediaUploadFB = [];
+            for (let link of fakeLinkPhotos) {
+                uploadPhotoToFB('', link);
+            }
+            handleProgressBar();
+        };
+        //Fake pregress Upload Data IG
+        let handleUploadIG = async function () {
+            idMediaUploadIG = [];
+            uploadPhotoToIG('Auto Post - Test', fakeLinkPhotos[0]);
+            handleProgressBar();
+        };
+
+        let handleProgressBar = async function () {
+            let myBar = $("#myBar");
+            let width = 0;
+            let runProgress = setInterval(frame, 30);
+            function frame() {
+                if (width >= 100) {
+                    clearInterval(runProgress);
+                } else {
+                    width++;
+                    myBar.style.width = width + "%";
+                }
+            }
+        };
+
+        //Push Content to FB
+        let handleSubmitFB = function () {
+            // let content = $('#content').value;
+            // let file = $('#file').files[0];
+            // if (file) {
+            //     console.log(file.type.split("/").pop());
+            // }
+            postContentFB('multipe', idMediaUploadFB);
+        };
+        //Push Content to IG
+        let handleSubmitIG = function () {
+            //console.log(idMediaUploadFB);
+            postContentIG(idMediaUploadIG);
+        };
+
+        let toggleButton = function (isLogin) {
+            if (isLogin) {
+                $('.FBLoginButton').style.display = 'none';
+                $('.LogoutButton').style.display = 'block';
+            } else {
+                $('.FBLoginButton').style.display = 'block';
+                $('.LogoutButton').style.display = 'none';
+            }
+        };
+    </script>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+
+    <!-- <script src="./sources/twit/lib/twitter.js"></script> -->
+    <!-- <script src="./twitter.js" defer></script> -->
+    <header>
+        <fb:login-button class="FBLoginButton" scope="public_profile,email" onlogin="checkLoginState();">
+        </fb:login-button>
+        <button class="LogoutButton" onclick="logoutFb();">Logout</button>
+    </header>
+
+    <main>
+        <div id="myProgress">
+            <div id="myBar"></div>
+        </div>
+        <div class="container">
+            <form id="contact" action="">
+                <h3>Content</h3>
+                <fieldset>
+                    <button type="button" name="uploadFB" class="upload" onclick="handleUploadFB();">Upload Media
+                        FB</button>
+                    <button type="button" name="uploadIG" class="upload" onclick="handleUploadIG();">Upload Media
+                        IG</button>
+                </fieldset>
+                <fieldset>
+                    <button type="button" name="submitFB" class="submit" onclick="handleSubmitFB();">Submit FB</button>
+                    <button type="button" name="submitIG" class="submit" onclick="handleSubmitIG();">Submit IG</button>
+                </fieldset>
+            </form>
+        </div>
+        <div class="result">abc</div>
+    </main>
+
+
+</body>
+
+</html>

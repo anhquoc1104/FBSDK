@@ -1,0 +1,90 @@
+---FACEBOOK
+-Dùng tài khoản fb, đăng nhập vào: https://developers.facebook.com/
+
+-Create App: https://developers.facebook.com/apps/
+	-Lấy AppID
+-truy cập: https://developers.facebook.com/tools/debug/accesstoken/
+	-Thông tin app
+-truy cập: https://developers.facebook.com/tools/accesstoken/
+	-User Token
+	-App Token
+-permissions: 	pages_show_list
+		pages_read_engagement
+		pages_read_user_content
+		pages_manage_posts
+		pages_manage_engagement
+-truy cập: https://developers.facebook.com/tools/explorer/
+	-trong phần Facebook App : Chọn page muốn lấy quyền
+	-trong phần : Add a Permission, cấp quyền cho: pages_read_engagement ; pages_manage_posts (post bài lên page)
+	-trong phần Access Token -> Generate Access Token : lấy User Access Token (Short-lived)				EAAKiUzuhll4BAHVALE5lN1R3Vb9wWZCx0oOaRhkH9Ps6SniT9CSHOPe2vgSSnvV11MK5ZAyTKnVZChpvOZBmtPZCLgGblhnOJaLkfWXqNCGbyphj58aZCz0dba2NT2hqK2gIjVZAR0FiFo9GnXLOMb9uUybQOc0vA2HJdLbp6ol86dGYHw4EoOjZCkLiJzrDznqXzriZAODMq8Ry8ZAZCvFvcAQZBwmzZC2mv5HkZD
+		Long-lived :  (Không dùng được)	https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&
+  							client_id={app-id}&
+  							client_secret={app-secret}&
+  							fb_exchange_token={short-lived-user-access-token} 
+			Hoặc: https://developers.facebook.com/tools/debug/accesstoken/?access_token={Access Token}
+				-truy cập Extend Access Token : Lấy User Access Token (Long-lived)
+	-Lấy AppToken
+		741428319852126|D2smNiv1L0JiqD6PNF_c59nC-YQ
+-truy cập: https://developers.facebook.com/tools/explorer
+	-truy cập vào phần : user or page
+		- lấy AccessToken
+	-Lấy UserID : 3693672620701030
+	- truy cập vào phần : Add a Permission, cấp quyền cho: pages_manage  và pages_publish
+-truy cập: https://developers.facebook.com/apps/741428319852126/settings/basic/
+	-Lấy AppSecret			0d23d5f230a41125754b9a56c4ea50b2
+	-Lấy AppID			741428319852126
+-Truy cập vào page/user dùng đăng bài: https://www.facebook.com/Share-Ti%E1%BA%BFng-Anh-251661611705721
+	Lấy PageID: 251661611705721
+	
+- Trong trang https://developers.facebook.com/tools/explorer/
+	Điền vào 251661611705721?field=access_token
+	submit
+	-Lấy mã truy cập dài hạn cho Người Dùng:	=> chuyển Access Token ngắn hạn thành dài hạn
+		GET => https://graph.facebook.com/{graph-api-version}/oauth/access_token?  
+    		grant_type=fb_exchange_token&          
+    		client_id={AppID}&
+    		client_secret={AppSecret}&
+    		fb_exchange_token={UserToken}
+			https://graph.facebook.com/v10.0/oauth/access_token?grant_type=fb_exchange_token&client_id=741428319852126&client_secret=0d23d5f230a41125754b9a56c4ea50b2&fb_exchange_token=EAAKiUzuhll4BAHVALE5lN1R3Vb9wWZCx0oOaRhkH9Ps6SniT9CSHOPe2vgSSnvV11MK5ZAyTKnVZChpvOZBmtPZCLgGblhnOJaLkfWXqNCGbyphj58aZCz0dba2NT2hqK2gIjVZAR0FiFo9GnXLOMb9uUybQOc0vA2HJdLbp6ol86dGYHw4EoOjZCkLiJzrDznqXzriZAODMq8Ry8ZAZCvFvcAQZBwmzZC2mv5HkZD
+	-Lấy mã truy cập dài hạn cho Trang: 
+		GET => https://graph.facebook.com/{graph-api-version}/{user-id}/accounts?access_token={long-lived-user-access-token}
+
+-truy cập https://developers.facebook.com/apps/741428319852126/fb-login/quickstart/ :
+	- App Domain cho site cần add tính năng auto login cho app.
+
+Limitations
+Short-lived User access tokens are valid for one hour.
+Long-lived User access tokens are valid for 60 days.
+Short-lived Page access tokens are valid for one hour.
+Long-lived Page access tokens are have no expiration date.
+
+-Photos: https://developers.facebook.com/docs/graph-api/reference/page/photos/
+
+---INSTAGRAM
+-permission:
+	pages_show_list
+	pages_read_engagement
+	instagram_basic
+	instagram_content_publish
+	instagram_manage_comments
+	instagram_manage_insights
+	Instagram Public Content Access
+-đăng nhập IG -> vào page trên FB -> setting -> Instagram -> add account íntasgram
+- endpoints => index.html 
+-Docs:
+	https://developers.facebook.com/docs/instagram-api/reference/ig-user/media#get-media
+	https://developers.facebook.com/docs/instagram-api/reference/ig-user/media_publish
+
+INSTALL:		https://developers.facebook.com/docs/javascript/quickstart
+-Chèn script SDK trên cùng của tag body
+	<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId            : 'your-app-id',
+      autoLogAppEvents : true,
+      xfbml            : true,
+      version          : 'v10.0'
+    });
+  };
+</script>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
